@@ -35,7 +35,7 @@ contract BlockBird {
     // Función para leer mensajes no leídos
     function readUnreadMessages() public returns (Message[] memory) {
         uint unreadCount = 0;
-        for (uint i = 0; i < messages.length; i++) {
+        for (uint i = messages.length - 1; i >= 0; i--) {
             if (!messages[i].read) {
                 unreadCount++;
                 messages[i].read = true; // Marcar como leído
@@ -44,8 +44,8 @@ contract BlockBird {
 
         Message[] memory unreadMessages = new Message[](unreadCount);
         uint j = 0;
-        for (uint i = 0; i < messages.length; i++) {
-            if (messages[i].read && unreadCount > 0) {
+        for (uint i = messages.length - 1; i >= 0; i--) {
+            if (!messages[i].read) {
                 unreadMessages[j] = messages[i];
                 j++;
             }
