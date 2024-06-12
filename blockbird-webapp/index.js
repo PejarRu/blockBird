@@ -1,0 +1,1 @@
+module.exports.blockBird = require('./build/blockBird')
