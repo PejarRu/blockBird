@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+interface IMessageCounter {
+    function increment() external;
+    function getCount() external view returns (uint256);
+}
+
 contract BlockBird {
     struct Message {
         string text;
@@ -10,12 +15,6 @@ contract BlockBird {
     }
 
     Message[] public messages;
-
-    // Counter contract interface
-    interface IMessageCounter {
-        function increment() external;
-        function getCount() external view returns (uint256);
-    }
 
     address public counter;
     address public owner;
@@ -80,8 +79,9 @@ contract BlockBird {
         uint256 j = 0;
         for (uint256 i = 0; i < len; i++) {
             if (!messages[i].read) {
-                unread[j] = messages[i];
-                messages[i].read = true;
+                Message storage currentMessage = messages[i];
+                unread[j] = currentMessage;
+                currentMessage.read = true;
                 j++;
             }
         }
