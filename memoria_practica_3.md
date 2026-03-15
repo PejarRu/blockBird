@@ -117,6 +117,8 @@ Implicación:
 
 Esta limitación se deja explícita por honestidad técnica y por mantener el alcance mínimo de la práctica.
 
+Como mejora futura, `MessageCounter` debería restringir `increment()` para aceptar llamadas únicamente desde el contrato principal `BlockBird`, evitando incrementos manuales externos.
+
 ## 9. Conclusiones
 
 La Práctica 3 cumple el objetivo de extender BlockBird con un contador en cadena integrado de forma clara y verificable. La separación entre lógica de mensajería y lógica de conteo mejora la mantenibilidad del sistema sin introducir complejidad innecesaria.

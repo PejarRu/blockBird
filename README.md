@@ -2,6 +2,16 @@
 
 Proyecto académico de Tokio School para el módulo de Ethereum.
 
+## Nota importante para evaluación
+
+La versión principal y evaluable del proyecto es la implementada con Hardhat en:
+
+- `contracts/`
+- `scripts/`
+- `test/`
+
+Los archivos del directorio raíz (`blockBird.sol`, `compile.js`, `index.js`) se conservan únicamente por trazabilidad académica e histórica.
+
 ## Resumen
 
 BlockBird es una dApp mínima de mensajería pública en Ethereum.

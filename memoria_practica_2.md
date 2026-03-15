@@ -18,7 +18,9 @@ Referencia del repositorio:
 
 ## 3. Arquitectura del sistema
 
-En la práctica original se trabajó con una arquitectura simple basada en un único contrato de mensajes y utilidades Node de compilación/consumo.
+La Práctica 2 se centra en el diseño funcional de una mensajería pública en blockchain: publicar y consultar mensajes de forma simple, verificable y comprensible.
+
+La primera implementación se desarrolló con una arquitectura sencilla basada en un único contrato de mensajes y utilidades Node de compilación/consumo.
 
 Elementos principales de esa etapa:
 
@@ -28,7 +30,7 @@ Elementos principales de esa etapa:
 
 Estado actual del repositorio:
 
-- El flujo principal de desarrollo y entrega pasó a Hardhat (`contracts/`, `test/`, `scripts/`).
+- Posteriormente, la misma base funcional fue migrada a una estructura Hardhat (`contracts/`, `test/`, `scripts/`) para mejorar mantenibilidad, pruebas y despliegue.
 - El archivo `blockBird.sol` en raíz se mantiene como **legacy** para trazabilidad académica.
 
 ## 4. Diseño del smart contract de mensajes (base funcional de la práctica)
@@ -74,7 +76,9 @@ En el estado actual del repositorio, estas capacidades se validan además con te
 
 ## 7. Conclusiones
 
-La Práctica 2 resolvió el objetivo académico de crear una dApp de mensajería pública simple y funcional. El diseño fue deliberadamente mínimo (KISS), con validaciones básicas y eventos para trazabilidad.
+La Práctica 2 resolvió el objetivo académico principal: definir e implementar una mensajería pública funcional sobre Ethereum. El diseño fue deliberadamente mínimo (KISS), con validaciones básicas y eventos para trazabilidad.
+
+La evolución posterior a Hardhat no cambia el objetivo de la práctica, sino que consolida su implementación en una estructura más mantenible y reproducible.
 
 Mejoras identificadas desde esta base (y tratadas en iteraciones posteriores):
 
