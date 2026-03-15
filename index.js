@@ -1,6 +1,8 @@
-// Try to load build artifact (legacy) otherwise fallback to Hardhat artifact path
+// LEGACY COMPATIBILITY ENTRYPOINT.
+// Main workflow is Hardhat artifacts under ./artifacts.
+// This file is kept for old scripts that import from project root.
 try {
-	module.exports.blockBird = require('./build/blockBird');
+	module.exports.blockBird = require('./build/BlockBird.json');
 } catch (e) {
 	try {
 		module.exports.blockBird = require('./artifacts/contracts/BlockBird.sol/BlockBird.json');
