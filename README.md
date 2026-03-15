@@ -105,3 +105,44 @@ Usuario -> setPseudonym -> mapping de pseudónimos
 Eventos:
   NewMessage -> Activado en la creación de un nuevo mensaje.
 ``` -->
+
+## Desarrollo y pruebas
+
+- Instalar dependencias:
+
+	```bash
+	npm install
+	```
+
+- Compilar contratos:
+
+	```bash
+	npm run compile
+	```
+
+- Ejecutar tests (usa Hardhat):
+
+	```bash
+	npm test
+	```
+
+- Desplegar en una red local (ej. Hardhat node):
+
+	```bash
+	npx hardhat node
+	npm run deploy
+	```
+
+## MessageCounter (contador de mensajes)
+
+Se añadió el contrato `MessageCounter` en `contracts/MessageCounter.sol`.
+
+- `MessageCounter` mantiene un contador `uint256` y expone:
+	- `increment()` — incrementa el contador.
+	- `getCount()` — devuelve el valor actual.
+
+- Integración: `BlockBird` ahora recibe la dirección del contador en su constructor y llama a `increment()` cada vez que se publica un mensaje. Puedes consultar el total de mensajes desde `BlockBird.getTotalMessages()` o directamente en `MessageCounter.getCount()`.
+
+El script `scripts/deploy.js` despliega primero `MessageCounter` y luego `BlockBird`, conectando ambos.
+
+El contrato principal se encuentra en `contracts/BlockBird.sol`.
