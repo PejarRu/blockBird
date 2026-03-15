@@ -4,6 +4,11 @@
 
 Esta memoria documenta la Práctica 3, que extiende la dApp BlockBird añadiendo un contrato separado cuyo propósito es mantener un contador de mensajes anclado en la blockchain. La práctica aborda la necesidad de separar responsabilidades y garantizar un conteo fiable y auditable del nº total de mensajes publicados.
 
+### Referencia al repositorio
+
+- Repositorio del proyecto (código fuente completo): `git@github.com:PejarRu/blockBird.git`
+- Enlace web para revisión: `https://github.com/PejarRu/blockBird`
+
 ## 2. Objetivos de la práctica
 
 - Implementar un nuevo smart contract `MessageCounter` que mantenga un contador `uint256`.

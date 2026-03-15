@@ -4,6 +4,11 @@
 
 Esta memoria documenta la Práctica 2 del proyecto BlockBird: una aplicación descentralizada (dApp) básica que permite publicar y consultar mensajes públicos en la blockchain. El objetivo de la práctica era diseñar e implementar el contrato inteligente que gestiona mensajes y su integración con una aplicación Web2 mínima.
 
+### Referencia al repositorio
+
+- Repositorio del proyecto (código fuente completo): `git@github.com:PejarRu/blockBird.git`
+- Enlace web para revisión: `https://github.com/PejarRu/blockBird`
+
 ## 2. Objetivos de la práctica
 
 - Implementar un smart contract que permita publicar mensajes públicos en la blockchain.
