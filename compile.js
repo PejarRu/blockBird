@@ -2,6 +2,10 @@ const solc = require('solc');
 const fs = require('fs-extra');
 const path = require('path');
 
+// LEGACY UTILITY:
+// This script is kept only for compatibility with the original project flow.
+// The main workflow of this repository is Hardhat (`npm run compile`, `npm test`, `npm run deploy`).
+
 /**
  * Compile .sol smart contracts in ./contracts and save the result in ./build
  * 
@@ -41,7 +45,7 @@ compile = (contracts) => {
                 abi: JSON.stringify(abi),
                 bytecode: bytecode
             }
-            const target = path.resolve(buildPath, path.dirname(contractSource), contractName + ".json");
+            const target = path.resolve(buildPath, path.dirname(contractSource), contractName + '.json');
             console.log(contractName, 'built in', target);
             fs.writeJsonSync(target, built);
         }
