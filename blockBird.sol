@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+// LEGACY FILE: initial academic version kept for historical reference.
+// Not used by the current Hardhat workflow.
+
 contract BlockBird {
     // Estructura para almacenar mensajes
     struct Message {
