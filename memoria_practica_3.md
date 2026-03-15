@@ -1,153 +1,122 @@
-# Memoria Práctica 3 — Contador de mensajes en BlockBird
+# Memoria Práctica 3 — BlockBird (Integración de MessageCounter)
 
 ## 1. Introducción
 
-Esta memoria documenta la Práctica 3, que extiende la dApp BlockBird añadiendo un contrato separado cuyo propósito es mantener un contador de mensajes anclado en la blockchain. La práctica aborda la necesidad de separar responsabilidades y garantizar un conteo fiable y auditable del nº total de mensajes publicados.
+Esta memoria documenta la Práctica 3 del proyecto BlockBird: ampliación del contrato de mensajería con un segundo contrato dedicado al conteo de mensajes publicados.
 
-### Referencia al repositorio
+Referencia del repositorio:
 
-- Repositorio del proyecto (código fuente completo): `git@github.com:PejarRu/blockBird.git`
-- Enlace web para revisión: `https://github.com/PejarRu/blockBird`
+- URL SSH: `git@github.com:PejarRu/blockBird.git`
+- URL Web: `https://github.com/PejarRu/blockBird`
 
 ## 2. Objetivos de la práctica
 
-- Implementar un nuevo smart contract `MessageCounter` que mantenga un contador `uint256`.
-- Garantizar que el contador se incremente cada vez que se publique un mensaje desde el contrato de mensajes.
-- Integrar ambos contratos de forma segura, con validaciones defensivas.
-- Añadir pruebas que verifiquen la interacción entre contratos y el correcto incremento del contador.
+- Añadir el contrato `MessageCounter` para mantener un contador en blockchain.
+- Integrar el contrato de mensajes (`BlockBird`) con `MessageCounter`.
+- Incrementar el contador automáticamente al publicar cada mensaje.
+- Verificar la integración con pruebas automatizadas.
 
-## 3. Necesidad y motivación
+## 3. Arquitectura de la ampliación
 
-Separar la responsabilidad de llevar el recuento en un contrato dedicado permite:
+Se adopta separación de responsabilidades:
 
-- Reducir la complejidad del contrato de mensajes.
-- Facilitar auditoría y actualización del mecanismo de conteo sin tocar la lógica de publicación.
-- Mejorar la modularidad y reutilización del componente de contadores.
+- `BlockBird`: gestiona publicación, lectura y metadatos del mensaje.
+- `MessageCounter`: gestiona exclusivamente el total acumulado.
 
-Esta decisión sigue KISS y DRY: la lógica de publicación no se reimplementa para contar; en su lugar, se delega la operación al `MessageCounter`.
+Esta separación reduce acoplamiento y facilita mantenimiento/auditoría de cada responsabilidad.
 
-## 4. Diseño del nuevo smart contract (`MessageCounter`)
+## 4. Diseño de smart contracts
 
-El contrato implementado es deliberadamente pequeño y explícito:
+### `contracts/MessageCounter.sol`
 
-- Estado:
-  - `uint256 private count` — contador interno.
+Contrato mínimo con una única responsabilidad:
 
-- Eventos:
-  - `CounterIncremented(address indexed by, uint256 newCount)` — notifica incrementos.
+- estado `count` (`uint256 private`),
+- `increment()` para aumentar el contador,
+- `getCount()` para consultar el total,
+- evento `CounterIncremented` para trazabilidad.
 
-- Funciones públicas:
-  - `increment()` — incrementa `count` en 1 y emite `CounterIncremented`.
-  - `getCount() view returns (uint256)` — devuelve el valor actual.
+### `contracts/BlockBird.sol`
 
-Fragmento representativo (`contracts/MessageCounter.sol`):
+Extensión del contrato de mensajes con integración externa:
 
-```solidity
-contract MessageCounter {
-    uint256 private count;
-    event CounterIncremented(address indexed by, uint256 newCount);
+- referencia a contrato contador vía `address public counter`,
+- interfaz `IMessageCounter` para `increment()` y `getCount()`,
+- constructor con dirección de contador,
+- `setCounter(address)` para actualizar referencia (solo owner),
+- `writeMessage(...)` publica mensaje y llama a `increment()`.
 
-    function increment() public {
-        count += 1;
-        emit CounterIncremented(msg.sender, count);
-    }
+Funciones activas en la versión final:
 
-    function getCount() public view returns (uint256) {
-        return count;
-    }
-}
-```
+- `writeMessage`
+- `readAllMessages`
+- `readUnreadMessages`
+- `getMessage`
+- `getMessageCount`
+- `getTotalMessages`
+- `setCounter`
 
-### Decisiones de diseño y defensivas
+Validaciones activas:
 
-- El contrato es minimalista: no asume permisos por defecto (cualquiera puede llamar `increment()` en esta versión). Esto facilita pruebas y despliegues iniciales; sin embargo, para entornos de producción se contempla restringir llamadas sólo desde el contrato de mensajes (ver sección de mejoras).
+- mensaje no vacío,
+- longitud máxima de 300,
+- contador configurado antes de publicar,
+- índice válido en `getMessage`,
+- dirección no nula y control de propietario en `setCounter`.
 
-## 5. Interacción entre contratos (integración)
+## 5. Integración entre contratos
 
-La integración se realizó modificando el contrato de mensajes para que almacene la dirección del contador y lo invoque al publicar un mensaje.
+Flujo funcional al publicar:
 
-- Cambios principales en `BlockBird` (archivo `contracts/BlockBird.sol`):
-  - Añadida la interfaz interna `IMessageCounter` con `increment()` y `getCount()`.
-  - Campo `address public counter` y `address public owner`.
-  - Constructor que recibe la dirección del contador (permitiendo inyección en despliegue).
-  - `setCounter(address _counter)` para actualizar la referencia (sólo `owner`).
-  - En `writeMessage(...)`, tras insertar el mensaje y emitir el evento, se llama a `IMessageCounter(counter).increment()`.
+1. el usuario llama a `BlockBird.writeMessage(...)`,
+2. `BlockBird` valida entrada y guarda mensaje,
+3. se emite `MessagePosted`,
+4. `BlockBird` invoca `MessageCounter.increment()`.
 
-Fragmento esencial de integración en `BlockBird`:
+Consulta de totales:
 
-```solidity
-interface IMessageCounter { function increment() external; function getCount() external view returns (uint256); }
+- `BlockBird.getTotalMessages()` delega en `MessageCounter.getCount()`.
 
-address public counter;
+## 6. Despliegue
 
-constructor(address _counter) {
-    owner = msg.sender;
-    if (_counter != address(0)) counter = _counter;
-}
+Script: `scripts/deploy.js`.
 
-function writeMessage(string memory _message) public {
-    // validaciones ...
-    messages.push(...);
-    emit MessagePosted(msg.sender, block.timestamp, _message);
-    // integración: incremento del contador externo
-    IMessageCounter(counter).increment();
-}
-```
+Orden de despliegue implementado:
 
-### Validaciones defensivas realizadas
+1. desplegar `MessageCounter`,
+2. desplegar `BlockBird` pasando la dirección de `MessageCounter`.
 
-- `constructor` permite recibir la dirección del contador en el despliegue para forzar la dependencia desde el inicio.
-- `setCounter` valida que la dirección no sea `address(0)` y que sólo el `owner` pueda cambiarla.
-- `writeMessage` exige `counter != address(0)` antes de operar para evitar inconsistencias donde el mensaje se publique pero no haya contador disponible.
-
-## 6. Despliegue y scripts
-
-Se actualizó el script de despliegue `scripts/deploy.js` para:
-
-1. Desplegar `MessageCounter`.
-2. Desplegar `BlockBird` pasando la dirección del contador al constructor.
-
-Resumen (comandos):
-
-```bash
-npx hardhat node
-npm run deploy
-```
-
-El orden garantiza que `BlockBird` tenga la referencia correcta desde su creación y evita llamados a un contador no inicializado.
+Este orden garantiza que `BlockBird` nace con dependencia resuelta para contabilizar publicaciones desde el inicio.
 
 ## 7. Pruebas realizadas
 
-Se añadieron pruebas automáticas (`test/blockBird.test.js`) que comprueban la integración entre contratos:
+Los tests en `test/blockBird.test.js` validan:
 
-- Despliegue de `MessageCounter` y `BlockBird` con la dirección del contador.
-- Publicación de mensajes mediante `BlockBird.writeMessage(...)` y verificación de que:
-  - el evento `MessagePosted` se emite correctamente,
-  - `BlockBird.getMessageCount()` refleja el número de entradas locales en `messages`,
-  - `MessageCounter.getCount()` incrementa de forma paralela y coherente.
+- estado inicial de mensajes en cero,
+- publicación de mensaje,
+- emisión de evento `MessagePosted`,
+- incremento de `MessageCounter`,
+- lectura de todos los mensajes,
+- presencia de `timestamp`,
+- lectura de no leídos y marcado a leídos,
+- revert por mensaje vacío,
+- revert por mensaje > 300 caracteres,
+- revert por índice fuera de rango en `getMessage`,
+- restricción de propietario en `setCounter`,
+- rechazo de dirección cero en `setCounter`.
 
-Ejemplo de aserción realizada en tests:
+## 8. Limitaciones de seguridad actuales
 
-```javascript
-await blockBird.writeMessage('Hello');
-expect((await counter.getCount()).toNumber()).to.equal(1);
-expect((await blockBird.getTotalMessages()).toNumber()).to.equal(1);
-```
+La implementación actual mantiene simplicidad deliberada:
 
-Además, los tests verifican que llamadas repetidas incrementan el contador (cobertura básica de la interacción).
+- `MessageCounter.increment()` es público.
 
-## 8. Ventajas de separar responsabilidades
+Implicación:
 
-- Modularidad: `MessageCounter` puede ser reemplazado o mejorado sin tocar la lógica de mensajes.
-- Auditabilidad: el contador es una entidad autónoma cuyo historial (eventos `CounterIncremented`) facilita el cómputo off-chain.
-- Mantenibilidad: las responsabilidades están bien delimitadas; cambios en el mecanismo de conteo (p. ej. sumar pesos o controles adicionales) no afectan al contrato principal.
+- cualquier cuenta puede incrementar el contador directamente sin pasar por `BlockBird`.
 
-## 9. Mejoras futuras y consideraciones de seguridad
+Esta limitación se deja explícita por honestidad técnica y por mantener el alcance mínimo de la práctica.
 
-- Restringir `MessageCounter.increment()` para que sólo pueda ser invocado por el contrato `BlockBird` (ej. almacenar la dirección autorizada en `MessageCounter` o añadir `onlyOwner`/modificador).
-- Añadir mecanismos de prueba de integridad en `BlockBird` para detectar desincronizaciones entre `messages.length` y `MessageCounter.getCount()`.
-- Considerar coste de gas y diseño off-chain para grandes volúmenes: mantener en cadena sólo lo necesario y delegar indexación a soluciones off-chain cuando proceda.
+## 9. Conclusiones
 
-## 10. Conclusión
-
-La Práctica 3 aporta una separación de responsabilidades necesaria para sistemas en producción: un componente ligero y auditable (`MessageCounter`) gestiona el conteo y el contrato de mensajes mantiene su foco en la lógica de publicación. La integración asegura consistencia básica y las pruebas añaden confianza en la interacción entre contratos.
+La Práctica 3 cumple el objetivo de extender BlockBird con un contador en cadena integrado de forma clara y verificable. La separación entre lógica de mensajería y lógica de conteo mejora la mantenibilidad del sistema sin introducir complejidad innecesaria.
