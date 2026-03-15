@@ -1,0 +1,16 @@
+{
+    "name": "blockbird",
+    "version": "1.0.0",
+    "description": "BlockBird simple public messaging smart contract",
+    "scripts": {
+        "test": "npx hardhat test",
+        "compile": "npx hardhat compile",
+        "deploy": "npx hardhat run --network localhost scripts/deploy.js"
+    },
+    "devDependencies": {
+        "@nomiclabs/hardhat-ethers": "^2.1.0",
+        "chai": "^4.3.7",
+        "ethers": "^5.7.2",
+        "hardhat": "^2.17.0"
+    }
+}
