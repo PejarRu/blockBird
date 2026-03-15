@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+// Minimal counter contract used by BlockBird to track total posted messages.
 contract MessageCounter {
     uint256 private count;
 
